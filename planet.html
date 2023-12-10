@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Planet Picker 🌍👌 | Text/Number Transitions &amp; Circular SVG Nav Tutorial | @keyframers 2.10.0</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel='stylesheet' href='https://unpkg.com/splitting@1.0.6/dist/splitting.css'><link rel="stylesheet" href="planet.css">
+<link rel="stylesheet" href="./menu.css">
+</head>
+<body>
+
+  <nav role="navigation">
+    <div id="menuToggle">
+ 
+      <!--
+      A fake / hidden checkbox is used as click reciever,
+      so you can use the :checked selector on it.
+      -->
+      <input type="checkbox" />
+      
+      <!--
+      Some spans to act as a hamburger.
+      
+      They are acting like a real hamburger,
+      not that McDonalds stuff.
+      -->
+      <span></span>
+      <span></span>
+      <span></span>
+      
+      <!--
+      Too bad the menu has to be inside of the button
+      but hey, it's pure CSS magic.
+      -->
+      <ul id="menu">
+        
+        <a href="index.html"><li>Pale Blue Dot.</li></a>
+        <a href="carlsagan.html"><li>Carl Sagan</li></a>
+        <a href="planet.html"><li>Planet</li></a>
+        <a href="trappist.html"><li>trappist</li></a>
+      </ul>
+    </div>
+  </nav>
+    
+<!-- partial:index.partial.html -->
+<script src="https://codepen.io/shshaw/pen/QmZYMG.js"></script>
+
+<div id="app" data-current-planet="mercury">
+
+  <nav class="planet-nav">
+    <svg viewBox="0 20 400 400" xmlns="http://www.w3.org/2000/svg">
+
+<!--       <defs> -->
+        <path 
+        
+            id="navPath" 
+            d="M10,200 C30,-28 370,-28 390,200"
+            fill="none" />
+<!--       </defs> -->
+
+      <text>
+        <textPath href="#navPath" startOffset="0" font-size="10">
+          <tspan>Mercury</tspan>
+          <tspan>Venus</tspan>
+          <tspan>Earth</tspan>
+          <tspan>Mars</tspan>
+          <tspan>Jupiter</tspan>
+          <tspan>Saturn</tspan>
+          <tspan>Uranus</tspan>
+          <tspan>Neptune</tspan>
+        </textPath>
+      </text>
+
+    </svg>
+  </nav>
+
+  <div class="planet" data-planet="mercury" data-active>
+    <div class="planet-title">
+      <h1>Mercury</h1>
+      <p class="planet-description">Tiny and close to the sun.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        3.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        0.9
+      </div>
+      <div class="detail" data-detail="hours">
+        10
+      </div>
+    </div>
+    <article class="card card--mercury">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  </div>
+
+  <div class="planet" data-planet="venus">
+    <div class="planet-title">
+      <h1>Venus</h1>
+      <p class="planet-description">A planet of razors and tennis players.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        4.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        0.2
+      </div>
+      <div class="detail" data-detail="hours">
+        20
+      </div>
+      </div>
+      <article class="card card--venus">
+        <div class="card__planet">
+            <div class="planet__atmosphere">
+                <div class="planet__surface"></div>
+            </div>
+        </div>
+    </article>
+    </div>
+
+
+  <div class="planet" data-planet="earth">
+    <div class="planet-title">
+      <h1>Earth</h1>
+      <p class="planet-description">Voted best planet in the Solar System by all organisms.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        5.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        7.3
+      </div>
+      <div class="detail" data-detail="hours">
+        30
+      </div>
+    </div>
+
+    <article class="card card--earth">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  
+  </div>
+
+  <div class="planet" data-planet="mars">
+    <div class="planet-title">
+      <h1>Mars</h1>
+      <p class="planet-description">Future Site of Elon Musk's AirBnB.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        6.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        1.1
+      </div>
+      <div class="detail" data-detail="hours">
+        40
+      </div>
+    </div>
+    <article class="card card--mars">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  </div>
+
+  <div class="planet" data-planet="jupiter">
+    <div class="planet-title">
+      <h1>Jupiter</h1>
+      <p class="planet-description">Twice as massive as the other planets combined.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        11.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        1.8
+      </div>
+      <div class="detail" data-detail="hours">
+        50
+      </div>
+    </div>
+
+    <article class="card card--jupiter">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  </div>
+
+  <div class="planet" data-planet="saturn">
+    <div class="planet-title">
+      <h1>Saturn</h1>
+      <p class="planet-description">This planet sponsored by Zales.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        9.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        7.3
+      </div>
+      <div class="detail" data-detail="hours">
+        60
+      </div>
+    </div>
+    <article class="card card--saturn">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  </div>
+
+  <div class="planet" data-planet="uranus">
+    <div class="planet-title">
+      <h1>Uranus</h1>
+      <p class="planet-description">Hey, stop laughing. It's not funny.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        11.13
+      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        1.8
+      </div>
+      <div class="detail" data-detail="hours">
+        50
+      </div>    </div>
+
+      <article class="card card--uranus">
+        <div class="card__planet">
+            <div class="planet__atmosphere">
+                <div class="planet__surface"></div>
+            </div>
+        </div>
+    </article>
+    </div>
+
+
+  <div class="planet" data-planet="neptune">
+    <div class="planet-title">
+      <h1>Neptune</h1>
+      <p class="planet-description">A planet for pirates; just narrowly made the cut when scientists decided nine planets was too many.</p>
+    </div>
+
+    <div class="planet-details">
+      <div class="detail" data-detail="tilt" data-postfix="°">
+        31.03      </div>
+      <div class="detail" data-detail="gravity" data-postfix="𝗑">
+        8.9      </div>
+      <div class="detail" data-detail="hours">
+        10
+      </div>
+    </div>
+
+    <article class="card card--neptune">
+      <div class="card__planet">
+          <div class="planet__atmosphere">
+              <div class="planet__surface"></div>
+          </div>
+      </div>
+  </article>
+  </div>
+<!-- partial -->
+  <script src='https://unpkg.com/splitting@1.0.6/dist/splitting.min.js'></script><script  src="planet.js"></script>
+
+</body>
+</html>

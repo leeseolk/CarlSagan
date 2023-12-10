@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css'><link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./menu.css">
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<body>
+  <!-- partial:index.partial.html -->
+  <body>
+    
+      <section>
+        <div class="outer">
+          <div class="inner">
+            <div class="bg home">
+          
+  
+             
+              <div class="content">
+                <img src="img/calsagan1.png" alt="">
+            </div>
+            
+            <canvas></canvas>
+         <div class="overlay">
+          Carl Edward Sagan
+      </div>
+      
+      
+      
+      <script type="x-shader/x-fragment" id="vertShader">
+          precision highp float;
+      
+          attribute vec2 aPosition;
+          varying vec2 vUv;
+          varying vec2 vL;
+          varying vec2 vR;
+          varying vec2 vT;
+          varying vec2 vB;
+          uniform vec2 u_vertex_texel;
+      
+          void main () {
+              vUv = aPosition * .5 + .5;
+              vL = vUv - vec2(u_vertex_texel.x, 0.);
+              vR = vUv + vec2(u_vertex_texel.x, 0.);
+              vT = vUv + vec2(0., u_vertex_texel.y);
+              vB = vUv - vec2(0., u_vertex_texel.y);
+              gl_Position = vec4(aPosition, 0., 1.);
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderAdvection">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying vec2 vUv;
+          uniform sampler2D u_velocity_txr;
+          uniform sampler2D u_input_txr;
+          uniform vec2 u_vertex_texel;
+          uniform vec2 u_output_textel;
+          uniform float u_dt;
+          uniform float u_dissipation;
+      
+          vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
+              vec2 st = uv / tsize - 0.5;
+      
+              vec2 iuv = floor(st);
+              vec2 fuv = fract(st);
+      
+              vec4 a = texture2D(sam, (iuv + vec2(0.5, 0.5)) * tsize);
+              vec4 b = texture2D(sam, (iuv + vec2(1.5, 0.5)) * tsize);
+              vec4 c = texture2D(sam, (iuv + vec2(0.5, 1.5)) * tsize);
+              vec4 d = texture2D(sam, (iuv + vec2(1.5, 1.5)) * tsize);
+      
+              return mix(mix(a, b, fuv.x), mix(c, d, fuv.x), fuv.y);
+          }
+      
+          void main () {
+              vec2 coord = vUv - u_dt * bilerp(u_velocity_txr, vUv, u_vertex_texel).xy * u_vertex_texel;
+              gl_FragColor = u_dissipation * bilerp(u_input_txr, coord, u_output_textel);
+              gl_FragColor.a = 1.;
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderDivergence">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying highp vec2 vUv;
+          varying highp vec2 vL;
+          varying highp vec2 vR;
+          varying highp vec2 vT;
+          varying highp vec2 vB;
+          uniform sampler2D u_velocity_txr;
+      
+          void main () {
+              float L = texture2D(u_velocity_txr, vL).x;
+              float R = texture2D(u_velocity_txr, vR).x;
+              float T = texture2D(u_velocity_txr, vT).y;
+              float B = texture2D(u_velocity_txr, vB).y;
+      
+              float div = .5 * (R - L + T - B);
+              gl_FragColor = vec4(div, 0., 0., 1.);
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderPressure">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying highp vec2 vUv;
+          varying highp vec2 vL;
+          varying highp vec2 vR;
+          varying highp vec2 vT;
+          varying highp vec2 vB;
+          uniform sampler2D u_pressure_txr;
+          uniform sampler2D u_divergence_txr;
+      
+          void main () {
+              float L = texture2D(u_pressure_txr, vL).x;
+              float R = texture2D(u_pressure_txr, vR).x;
+              float T = texture2D(u_pressure_txr, vT).x;
+              float B = texture2D(u_pressure_txr, vB).x;
+              float C = texture2D(u_pressure_txr, vUv).x;
+              float divergence = texture2D(u_divergence_txr, vUv).x;
+              float pressure = (L + R + B + T - divergence) * 0.25;
+              gl_FragColor = vec4(pressure, 0., 0., 1.);
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderGradientSubtract">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying highp vec2 vUv;
+          varying highp vec2 vL;
+          varying highp vec2 vR;
+          varying highp vec2 vT;
+          varying highp vec2 vB;
+          uniform sampler2D u_pressure_txr;
+          uniform sampler2D u_velocity_txr;
+      
+          void main () {
+              float L = texture2D(u_pressure_txr, vL).x;
+              float R = texture2D(u_pressure_txr, vR).x;
+              float T = texture2D(u_pressure_txr, vT).x;
+              float B = texture2D(u_pressure_txr, vB).x;
+              vec2 velocity = texture2D(u_velocity_txr, vUv).xy;
+              velocity.xy -= vec2(R - L, T - B);
+              gl_FragColor = vec4(velocity, 0., 1.);
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderPoint">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying vec2 vUv;
+          uniform sampler2D u_input_txr;
+          uniform float u_ratio;
+          uniform vec3 u_point_value;
+          uniform vec2 u_point;
+          uniform float u_point_size;
+      
+          void main () {
+              vec2 p = vUv - u_point.xy;
+              p.x *= u_ratio;
+              vec3 splat = pow(2., -dot(p, p) / u_point_size) * u_point_value;
+              vec3 base = texture2D(u_input_txr, vUv).xyz;
+              gl_FragColor = vec4(base + splat, 1.);
+          }
+      </script>
+      
+      <script type="x-shader/x-fragment" id="fragShaderDisplay">
+          precision highp float;
+          precision highp sampler2D;
+      
+          varying vec2 vUv;
+          uniform sampler2D u_output_texture;
+      
+          void main () {
+              vec3 C = texture2D(u_output_texture, vUv).rgb;
+              float a = max(C.r, max(C.g, C.b));
+              a = pow(.1 * a, .1);
+              a = clamp(a, 0., 1.);
+              gl_FragColor = vec4(1. - C, 1. - a);
+          }
+      </script>
+  
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <img class="mouse-move" src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/28313e5d-95f1-4e38-ac49-16b4cf006014" alt="" />
+      </section>
+      <nav role="navigation">
+        <div id="menuToggle">
+     
+          <!--
+          A fake / hidden checkbox is used as click reciever,
+          so you can use the :checked selector on it.
+          -->
+          <input type="checkbox" />
+          
+          <!--
+          Some spans to act as a hamburger.
+          
+          They are acting like a real hamburger,
+          not that McDonalds stuff.
+          -->
+          <span></span>
+          <span></span>
+          <span></span>
+          
+          <!--
+          Too bad the menu has to be inside of the button
+          but hey, it's pure CSS magic.
+          -->
+          <ul id="menu">
+            
+            <a href="index.html"><li>Pale Blue Dot.</li></a>
+            <a href="carlsagan.html"><li>Carl Sagan</li></a>
+            <a href="planet.html"><li>Planet</li></a>
+            <a href="trappist.html"><li>trappist</li></a>
+          </ul>
+        </div>
+      </nav>
+        
+      <section>
+        <div class="outer">
+          <div class="inner">
+            <div class="bg info">
+      
+            <div class="bg content">
+              <div class="swiper">
+                <div class="swiper-wrapper">
+                  <div class="swiper-slide">
+                   
+                 <p>
+                  인간은 코스모스에 연줄을 대고자 안달을 하며 산다. 우리도 그 큰 그림의 틀 속에 끼고 싶은 것이다. 그런데 알고 보니,
+                  '정말' 연줄이 닿아 있었다. 그 연줄은 점성술이 둘러대는 식의 개인적이고 자잘하며 상상력이 결여된 그런 수준의 관계가 아니었다. 인간 .
+                  과 코스모스의 관계는 물질의 기원을 통한 관계이다. 그것은 생명을잉태할 수 있는 지구, 인류의 진화 그리고 우리의 운명이 걸린 지극히심오한 연줄인 것이다. 
+                 </p>
+                 <h2>COSMOS</h2>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/31730ad0-acea-4cbf-97e3-e3462eb6b387" alt="berlin" />
+                    <div class="title">
+                      <p>우리는 애초부터 방랑자였다. 우리는 100마일에 걸쳐 서 있는 나무 하나하나를 다 알고 있었다.</p>
+                      <h2>Pale Blue Dot.</h2>
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/3db6d3cd-0771-4c10-966f-0a98d64fb1d6" alt="wham" />
+                    <div class="title">
+                      <p>별의 조성과 스펙트럼 속성은 과학자들이 자연에 부과한 것이 아니다. 오히려 거꾸로다. 우리가 무시했다가는 큰코다치게 되는 외부의 현실이 엄연히 존재하며, 인간의 진화는 우리 머릿속의 이미지와 외부 세계의 현실을 차츰 일치시켜 온 과정이라고 말할 수 있다. 그러므로 서로 다른 행성에서 탄생한 서로 다른 종들의 지식과 학문은 출발점은 다르더라도 서서히 수렴할 수밖에 없을 것이다</p>
+                      <h2>Murmurs of Earth</h2>
+                     
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/ad88d89a-2764-48e6-9894-6962bd0e9c8f" alt="george michael" />
+                    <div class="title">
+                      <p>아마도 인간은 지구에서 자신이 언젠가 사라져 버리고 말 것이라는사실을 비교적 명확하게 인식하고 있는 유일한 종일 것이다. </p>
+                      <h2>The Dragons of Eden</h2>
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/df1d9fc5-65af-44cd-830b-d826881ad825" alt="whitney houston" />
+                    <div class="title">
+                      <p>“제가 과학이라는 활동에─특히 천문학에─바라는 게 하나 있다면, 그것이 인간적인 행위로서, 즉 인간의 고유한 활동으로서 보였으면 하는 겁니다.” 그는 이렇게 말한다. “지구의 다른 어떤 생물도 과학을 ‘하지’ 않습니다. 강렬한 감정이라면 다른 종들도 갖고 있습니다. 인간을 독특하게 만드는 건 감정이 아닙니다. 인간을 독특하게 만드는 건 인간의 생각이고, 과학은 그것의 가장 훌륭한 예시입니다. 전 모든 사람이 그런 걸 즐기도록 만들어져 있다고 믿습니다. 하지만 사회가 학창 시절 초창기부터 사람들로부터 그런 의욕을 꺾어놓습니다. 모든 사람은 지적 발견과 공명하는 일종의 회로입니다. 저는 그 공명이 활발히 이뤄지도록 만들고 싶습니다.</p>
+                      <h2>Conversations with Carl Sagan</h2>
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/55755798-a5a4-493c-9013-0274be71edef" alt="a-ha" />
+                    <div class="title">
+                      <p>진짜 과학이 오해받으면 받을수록 유사 과학이 힘들 얻는다고 말할 수 있다. 만약 과학에 대해 아무것도 배운 게 없다면 자기가 믿는게 진짜 과학인지 유사과학인지 알 수 없을 것이다. 인간은 언제 어디서나 세상을 유사 과학적으로 바라보는 경향이 있다.
+                      </p>
+                    <h2>The Demon-Haunted World</h2>
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/05ca902f-5d0a-4d9b-9b3a-b98c224f3add" alt="madonna" />
+                    <div class="title">
+                      <p>"인류 사이에 있어서, 지구는 힘 있는 사람들만 독차지하는 것이 아니며, 무엇보다도, 현 세대만 독차지하는 것은
+                        더더욱 아닙니다. 다른 생물종과 관계에 있어서는 인간만 독차지해서는 안 됩니다. 지구는 모든 종, 모든 세대의 공유물이며,
+                        우리는 잠시 빌려쓰고 있는 것 입니다. 이렇게 단순 명료한 사실을 잊어버릴 때, 인류는 가이아(지구)와 그 위에서 살아가는
+                        모든 생명체에게 치명적 위험을 초래하고 말 것입니다.
+                      </p>
+                      <h2>Billions & Billions </h2>
+                    </div>
+                  </div>
+  
+                  <div class="swiper-slide">
+                    <img src="https://github.com/ecemgo/mini-samples-great-tricks/assets/13468728/84fad863-e9d1-4035-9009-3f54e7bdfbf1" alt="rick astley" />
+                    <div class="title">
+                      <p>과학이 지식의 총체라기 보다는 지식을 얻는 하나의 방법이라는 생각은 과학 외부와 실제로는 과학 내부 일부 영역들에서도 제대로 인식되지 못하고 있다.
+                     </p>
+                     <h2>Broca's Brain</h2>
+                    </div>
+                  </div>
+                </div>
+                <div class="swiper-pagination"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </body>
+<!-- partial -->
+  <script src='https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js'></script>
+<script src='https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js'></script>
+<script src='https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js'></script>
+<script src='https://assets.codepen.io/16327/gsap-latest-beta.min.js'></script>
+<script src='https://assets.codepen.io/16327/Observer.min.js'></script>
+<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/16327/SplitText3.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
